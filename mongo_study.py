@@ -1,4 +1,6 @@
 
+from ast import Str
+from tokenize import String
 from dotenv import load_dotenv,find_dotenv
 from pymongo import MongoClient
 import os
@@ -59,4 +61,39 @@ def count_people():
     count = person_collection.count_documents(filter={})
     print("Number of people",count)  
     
-count_people()
+
+def get_person_by_id(person_id):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+    person = person_collection.find_one({"_id":_id})
+    printer.pprint(person)
+    
+
+def get_age_range(min_age:int,max_age:int):
+    query={"$and":[
+                {"age":{"$gte":min_age,}},
+                {"age":{"$lte":max_age,}}
+            ]}
+    
+    people = person_collection.find(query).sort('age')
+    for person in people:
+        printer.pprint(person)
+    
+
+def columns():
+    columns = {"_id":0, "first_name":1, "last_names":1}
+    people = person_collection.find({}, columns)
+    for person in people:
+        printer.pprint(person)
+
+def update_person_by_id(person_id:Str):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+    all_updates = {
+        "$set":{"new_field": True},
+        "$inc":{'age':1},
+        "$rename":{"first_name": "first", "last_names":"last"}
+    }
+    person_collection.update_one({"_id":_id}, all_updates)
+    
+update_person_by_id("633d063273dd640529707815")
