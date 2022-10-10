@@ -89,11 +89,55 @@ def columns():
 def update_person_by_id(person_id:Str):
     from bson.objectid import ObjectId
     _id = ObjectId(person_id)
-    all_updates = {
-        "$set":{"new_field": True},
-        "$inc":{'age':1},
-        "$rename":{"first_name": "first", "last_names":"last"}
-    }
-    person_collection.update_one({"_id":_id}, all_updates)
+ # add new field and rename   
+    # all_updates = {
+    #     "$set":{"new_field": True},
+    #     "$inc":{'age':1},
+    #     "$rename":{"first_name": "first", "last_names":"last"}
+    # }
+    # person_collection.update_one({"_id":_id}, all_updates)
     
-update_person_by_id("633d063273dd640529707815")
+    person_collection.update_one({"_id":_id},{"$unset":{"new_field": ""}}, )
+    
+    
+def replace_one(person_id:Str):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+
+    data = {"first_name": "novo nome", "last_names":"nome ultimo nome", "age":100}
+    
+    person_collection.replace_one({"_id":_id}, data)
+    
+
+def delete_one(person_id:Str):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+    person_collection.delete_one({"_id":_id})
+    
+#----------------------------------------------------------------------------------------------------------
+address = {
+    "street": "Street bey",
+    "number": 2706,
+    "city": "City bey",
+    "countery":"Countery bay",
+    "zip": "94107",
+}
+def add_adress_embed(address, person_id):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+    
+    person_collection.update_one({"_id": _id}, {"$addToSet": {"address": address}})
+
+
+def add_adress_relations(person_id,address):
+    from bson.objectid import ObjectId
+    _id = ObjectId(person_id)
+    
+    address = address.copy()
+    address["owner_id"] = person_id
+    
+    address_collection = production.address
+    address_collection.insert_one(address)
+    
+    
+add_adress_embed(address,"633d063273dd640529707815")
